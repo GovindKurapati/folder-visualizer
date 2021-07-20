@@ -1,0 +1,167 @@
+.foldersWrapper {
+  margin: 10px;
+}
+
+.newFolderHeaderWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgb(192, 192, 192);
+}
+
+.newFolderContainer {
+  padding: 20px;
+}
+
+.folderInfo {
+  display: inline-flex;
+  margin: 10px;
+  padding: 10px;
+  -webkit-box-shadow: 0 0 2px 3px rgb(241, 241, 241);
+  -moz-box-shadow: 0 0 2px 3px rgb(241, 241, 241);
+  box-shadow: 0 0 5px 3px rgb(241, 241, 241);
+  border-radius: 10px;
+}
+
+.folderName {
+  display: inline-block;
+  margin: auto 10px;
+}
+
+.linkTxt {
+  text-decoration: none;
+  color: black;
+  font-size: 16px;
+}
+
+.pathBtn {
+  background-color: transparent;
+  border: none;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.pathBtn:hover,
+.activeFolder {
+  background-color: rgb(192, 192, 192);
+}
+
+.showAddFolder {
+  display: inline-block;
+}
+
+.hideAddFolder {
+  display: none;
+}
+
+.addNewFolderWrapper {
+  margin: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.addNewFolderWrapper img {
+  cursor: pointer;
+}
+
+.addFolderInput {
+  padding: 5px;
+  border-radius: 22px;
+  margin: 0 5px;
+  outline: none;
+}
+
+.addFolderBtn {
+  padding: 8px;
+  background-color: transparent;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.addFolderBtn:hover {
+  background-color: black;
+  color: white;
+}
+
+.inputWrapper input {
+  border: none;
+  width: 100%;
+  outline: none;
+  display: flex;
+}
+
+.inputWrapper {
+  border: 1px solid gray;
+  border-radius: 20px;
+  display: flex;
+  padding: 5px;
+  width: 500px;
+}
+
+.inputWrapper img {
+  padding: 0 10px 0 8px;
+}
+
+.searchContainer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.fallbackTxt {
+  text-align: center;
+  font-size: 18px;
+}
+
+.searchBtn {
+  border-radius: 10px;
+  outline: none;
+  border: none;
+  padding: 5px 20px;
+  cursor: pointer;
+}
+
+.searchBtn:hover {
+  background-color: black;
+  color: white;
+}
+
+.searchTypeWrapper {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+  gap: 10px;
+}
+
+.searchTypeWrapper span {
+  margin: 5px 0;
+}
+
+.activeSearchType {
+  background-color: black;
+  color: white;
+  border: none;
+  outline: none;
+  padding: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.inactiveSearchType {
+  background-color: white;
+  color: black;
+  border: none;
+  outline: none;
+  padding: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.searchElements {
+  display: inline-flex;
+  cursor: pointer;
+}
