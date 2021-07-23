@@ -10,34 +10,40 @@ import ErrorBoundary from "./components/ErrorBoundary";
 const App = () => {
   const [folderStructure, setfolderStructure] = useState([
     {
-      id: 1,
+      id: uuid(),
       name: "Folder1",
       parentId: null,
       location: "/Folder1",
     },
     {
-      id: 2,
+      id: uuid(),
       name: "Folder2",
       parentId: "Folder5",
       location: "/Folder1/Folder5/Folder2",
     },
     {
-      id: 3,
+      id: uuid(),
       name: "Folder3",
       parentId: "Folder1",
       location: "/Folder1/Folder3",
     },
     {
-      id: 4,
+      id: uuid(),
       name: "Folder4",
       parentId: "Folder3",
       location: "/Folder1/Folder3/Folder4",
     },
     {
-      id: 5,
+      id: uuid(),
       name: "Folder5",
       parentId: "Folder1",
       location: "/Folder1/Folder5",
+    },
+    {
+      id: 6,
+      name: "Folder6",
+      parentId: "Folder4",
+      location: "/Folder1/Folder3/Folder4/Folder6",
     },
   ]);
 

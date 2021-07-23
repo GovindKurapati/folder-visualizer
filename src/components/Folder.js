@@ -1,11 +1,4 @@
-import {
-  withRouter,
-  Link,
-  Route,
-  Switch,
-  Redirect,
-  useRouteMatch,
-} from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 import folderImg from "../images/sub-folder.png";
 import newFolderImg from "../images/new-folder.png";
@@ -16,12 +9,7 @@ import "./Folder.css";
 const Folder = (props) => {
   const myRef = useRef(null);
 
-  const [folder, setfolder] = useState({
-    id: "",
-    name: "",
-    location: "",
-    parentId: "",
-  });
+  const [folder, setfolder] = useState({});
   const [subFolder, setsubFolder] = useState([]);
   const [childFolder, setchildFolder] = useState([]);
   const [parentFolder, setparentFolder] = useState([]);
@@ -31,63 +19,16 @@ const Folder = (props) => {
   const [defaultSearchType, setdefaultSearchType] = useState("This Folder");
   const [searchResults, setsearchResults] = useState([]);
 
-  // this.state = {
-  //   folder: {},
-  //   subFolder: [],
-  //   childFolder: [],
-  //   parentFolder: [],
-  //   newFolder: "",
-  //   addFolderVisibility: false,
-  //   searchTxt: "",
-  //   defaultSearchType: "This Folder",
-  //   searchResults: [],
-  // };
-
-  // useEffect(() => {
-  //   console.log(props);
-  //   // await setValues();
-  //   // await setChild();
-  //   // await setParent();
-  //   // await setChildForSubFolder();
-  //   console.log(folder);
-  // }, []);
+  useEffect(async () => {
+    const currentFolder = await setValues();
+    const childArr = await setChild(currentFolder);
+    await setParent(currentFolder);
+    await setChildForSubFolder(childArr);
+  }, [props.location.pathname, props.folders]);
 
   useEffect(() => {
-    console.log("🔥🔥🔥🔥🔥🔥");
-    async function fetchData() {
-      console.log("1");
-      await setValues();
-      console.log("2");
-
-      await setChild();
-      console.log("3");
-
-      await setParent();
-      console.log("4");
-
-      await setChildForSubFolder();
-      console.log("5");
-    }
-    fetchData();
-    console.log(folder, subFolder, parentFolder);
-  }, [props.location.pathname, folder, subFolder, parentFolder]);
-
-  // componentDidMount() {
-  //   this.setValues();
-  // }
-
-  // async componentDidUpdate(prevProps, prevState) {
-  //   var urls = this.props.location.pathname.split("/");
-  //   if (
-  //     prevState.folder.name !== urls[urls.length - 1] ||
-  //     prevProps.folders.length !== this.props.folders.length
-  //   ) {
-  //     await this.setValues();
-  //     await this.setChild();
-  //     await this.setParent();
-  //     await this.setChildForSubFolder();
-  //   }
-  // }
+    myRef.current.focus();
+  }, [addFolderVisibility]);
 
   const setValues = async () => {
     var urls = props.location.pathname.split("/");
@@ -96,19 +37,19 @@ const Folder = (props) => {
     );
     setfolder({ ...currentFolder });
 
-    console.log(currentFolder, "🥳");
+    return currentFolder;
   };
 
-  const setChild = async () => {
-    var arr = await props.folders.filter((f) => f.parentId === folder.name);
+  const setChild = async (currentFolder) => {
+    var arr = await props.folders.filter(
+      (f) => f.parentId === currentFolder.name
+    );
     setsubFolder([...arr]);
-    console.log(props.folders.filter((f) => f.parentId === folder.name));
-    console.log(props.folders, folder);
-    console.log("inside setchild");
+    return arr;
   };
 
-  const setParent = async () => {
-    var parentId = folder.parentId;
+  const setParent = async (currentFolder) => {
+    var parentId = currentFolder.parentId;
     var arr = [];
     if (parentId) {
       var result = null;
@@ -122,11 +63,10 @@ const Folder = (props) => {
     }
     arr = arr.reverse();
     setparentFolder([...arr]);
-    console.log("inside setparent");
   };
 
-  const setChildForSubFolder = async () => {
-    var subFolderNames = await subFolder.map((f) => f.name);
+  const setChildForSubFolder = async (childArr) => {
+    var subFolderNames = await childArr.map((f) => f.name);
     var resultArr = [];
     //to fetch all child folders
     while (subFolderNames.length > 0) {
@@ -140,12 +80,11 @@ const Folder = (props) => {
       subFolderNames = arr.map((f) => f.name);
     }
     setchildFolder([...resultArr]);
-    console.log("inside set sub child");
   };
 
   const addFolderHandler = () => {
     if (newFolder.length > 0) {
-      var newFolder = {
+      var newFolderInfo = {
         id: uuid(),
         name: newFolder,
         parentId: folder.name,
@@ -154,7 +93,7 @@ const Folder = (props) => {
           "/" +
           newFolder,
       };
-      this.props.addFolder(newFolder);
+      props.addFolder(newFolderInfo);
       //resetting
       setnewFolder("");
       setaddFolderVisibility((prevState) => !prevState);
@@ -168,7 +107,8 @@ const Folder = (props) => {
   const onClickNewFolderIcon = () => {
     setaddFolderVisibility((prevState) => !prevState);
     //focus the add folder input
-    myRef.current.focus();
+
+    // myRef.current.focus();
   };
 
   const searchHandler = async () => {
@@ -184,7 +124,7 @@ const Folder = (props) => {
       //this block of code is when user clears after first search and starts search again in "This Folder".
       //first time search will filter the original array.
       //so that is resetted after each search.
-      await setChild();
+      await setChild(folder);
     }
   };
 
@@ -198,7 +138,7 @@ const Folder = (props) => {
   };
 
   const searchThisFolder = async () => {
-    await setChild();
+    await setChild(folder);
     var searchResult = subFolder.filter(
       (e) => e.name.toLowerCase().indexOf(searchTxt) >= 0
     );
@@ -243,15 +183,158 @@ const Folder = (props) => {
     setsearchResults([]);
   };
 
-  // var url = this.props.location.pathname;
+  var url = props.location.pathname;
   return (
     <div className="newFolderContainer">
-      {folder.name}
-      <Link to="/Folder1/Folder3">Folder3</Link>
-      <p>Folder - {JSON.stringify(folder)}</p>
-      <p>SubFolders - {JSON.stringify(subFolder)}</p>
-      <p>Child for SubFolder - {JSON.stringify(childFolder)}</p>
-      <p>Parent-Folder {JSON.stringify(parentFolder)}</p>
+      <div className="searchContainer">
+        <div className="inputWrapper">
+          <img src={searchIcon} width="20px" alt="search-icon" />
+          <input type="text" value={searchTxt} onChange={setSearchTxtHandler} />
+        </div>
+        <button className="searchBtn" onClick={searchHandler}>
+          Search
+        </button>
+      </div>
+      {searchTxt.length > 0 && (
+        <div className="searchTypeWrapper">
+          <span>Search In:&nbsp;</span>
+          <button
+            onClick={searchTypeSelectHandler}
+            className={
+              defaultSearchType === "App"
+                ? "activeSearchType"
+                : "inactiveSearchType"
+            }
+          >
+            App
+          </button>
+          <button
+            onClick={searchTypeSelectHandler}
+            className={
+              defaultSearchType === "This Folder"
+                ? "activeSearchType"
+                : "inactiveSearchType"
+            }
+          >
+            This Folder
+          </button>
+          <button
+            onClick={searchTypeSelectHandler}
+            className={
+              defaultSearchType === "Child Folders"
+                ? "activeSearchType"
+                : "inactiveSearchType"
+            }
+          >
+            Child Folders
+          </button>
+        </div>
+      )}
+      {defaultSearchType === "This Folder" && (
+        <div className="newFolderHeaderWrapper">
+          <div className="pathWrapper">
+            {parentFolder.map((folder) => {
+              return (
+                <div key={folder.id} style={{ display: "inline-block" }}>
+                  {/* <Link
+                    to={`${this.urlPathClipper(folder.name)}/${folder.name}`}
+                  >
+                    {folder.name}
+                  </Link> */}
+                  <button
+                    className="pathBtn"
+                    onClick={() => {
+                      props.history.push(folder.location);
+                    }}
+                  >
+                    {folder.name}
+                  </button>
+                  <span>&nbsp; &gt; &nbsp;</span>
+                </div>
+              );
+            })}
+            {/* <Link
+              to={`${this.urlPathClipper(this.state.folder.name)}/${
+                this.state.folder.name
+              }`}
+            >
+              {this.state.folder.name}
+            </Link> */}
+            <button
+              className="pathBtn activeFolder"
+              onClick={() => {
+                props.history.push(folder.location);
+              }}
+            >
+              {folder.name}
+            </button>
+          </div>
+          <div className="addNewFolderWrapper">
+            <img
+              src={newFolderImg}
+              width="30px"
+              onClick={onClickNewFolderIcon}
+              alt="new-folder"
+            />
+            <div
+              className={
+                addFolderVisibility === true ? "showAddFolder" : "hideAddFolder"
+              }
+            >
+              <input
+                className="addFolderInput"
+                value={newFolder}
+                onChange={inputNewFolder}
+                type="text"
+                ref={myRef}
+              ></input>
+              <button className="addFolderBtn" onClick={addFolderHandler}>
+                Add Folder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="foldersWrapper">
+        {defaultSearchType === "This Folder" &&
+          subFolder.map((e) => {
+            return (
+              <Link className="linkTxt" key={e.id} to={`${url}/${e.name}`}>
+                <div className="folderInfo">
+                  <img src={folderImg} width="50px" />
+                  <p className="folderName">{e.name}</p>
+                </div>
+              </Link>
+            );
+          })}
+        {subFolder.length === 0 && (
+          <p className="fallbackTxt">No folders present</p>
+        )}
+
+        {
+          defaultSearchType !== "This Folder" && searchResults.length > 0
+            ? searchResults.map((folder) => {
+                return (
+                  <div
+                    key={folder.id}
+                    className="searchElements"
+                    onClick={() => {
+                      selectSearchElementHandler(folder);
+                    }}
+                  >
+                    <div className="folderInfo">
+                      <img src={folderImg} width="50px" />
+                      <p className="folderName">{folder.name}</p>
+                    </div>
+                  </div>
+                );
+              })
+            : null
+          // <p>No folders found</p>
+          //TODO:
+          //fallback for empty search results
+        }
+      </div>
     </div>
   );
 };
