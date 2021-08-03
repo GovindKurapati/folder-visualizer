@@ -2,56 +2,13 @@ import "./App.css";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import React, { useState } from "react";
 import Folder from "./components/Folder";
-import { v4 as uuid } from "uuid";
 import mainFolder from "./images/main-folder.png";
 import titleIcon from "./images/title-folder.png";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { useSelector } from "react-redux";
 
 const App = () => {
-  const [folderStructure, setfolderStructure] = useState([
-    {
-      id: uuid(),
-      name: "Folder1",
-      parentId: null,
-      location: "/Folder1",
-    },
-    {
-      id: uuid(),
-      name: "Folder2",
-      parentId: "Folder5",
-      location: "/Folder1/Folder5/Folder2",
-    },
-    {
-      id: uuid(),
-      name: "Folder3",
-      parentId: "Folder1",
-      location: "/Folder1/Folder3",
-    },
-    {
-      id: uuid(),
-      name: "Folder4",
-      parentId: "Folder3",
-      location: "/Folder1/Folder3/Folder4",
-    },
-    {
-      id: uuid(),
-      name: "Folder5",
-      parentId: "Folder1",
-      location: "/Folder1/Folder5",
-    },
-    {
-      id: 6,
-      name: "Folder6",
-      parentId: "Folder4",
-      location: "/Folder1/Folder3/Folder4/Folder6",
-    },
-  ]);
-
-  // adding a new folder to the state
-  const addNewFolderHandler = (folder) => {
-    setfolderStructure((prevState) => [...prevState, folder]);
-  };
-
+  const folders = useSelector((state) => state.folderReducer.folders);
   return (
     <div className="App">
       <p className="titleName">
@@ -61,7 +18,7 @@ const App = () => {
       <Router>
         {/* for rendering root folders */}
         <div className="mainFolderParentWrapper">
-          {folderStructure.map((folder) => {
+          {folders.map((folder) => {
             if (folder.parentId == null) {
               return (
                 <Link
@@ -86,10 +43,7 @@ const App = () => {
         <Switch>
           <Route path={`/:id`}>
             <ErrorBoundary>
-              <Folder
-                folders={folderStructure}
-                addFolder={addNewFolderHandler}
-              />
+              <Folder />
             </ErrorBoundary>
           </Route>
         </Switch>

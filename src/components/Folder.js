@@ -5,95 +5,66 @@ import newFolderImg from "../images/new-folder.png";
 import searchIcon from "../images/search.png";
 import { v4 as uuid } from "uuid";
 import "./Folder.css";
+import { useDispatch, useSelector, useStore } from "react-redux";
+import findFolderByName from "../actions/findFolderByName";
+import { store } from "../App";
+import addFolder from "../actions/addFolder";
 
 const Folder = (props) => {
+  //local states
   const myRef = useRef(null);
-
-  const [folder, setfolder] = useState({});
-  const [subFolder, setsubFolder] = useState([]);
-  const [childFolder, setchildFolder] = useState([]);
-  const [parentFolder, setparentFolder] = useState([]);
   const [newFolder, setnewFolder] = useState("");
   const [addFolderVisibility, setaddFolderVisibility] = useState(false);
   const [searchTxt, setsearchTxt] = useState("");
   const [defaultSearchType, setdefaultSearchType] = useState("This Folder");
   const [searchResults, setsearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  let folderFound = useSelector((state) => {
+    console.log(state.folderReducer.currentFolder);
+    return state.folderReducer.currentFolder;
+  });
+
+  let subFolderArr = useSelector((state) => {
+    return state.folderReducer.subFolders;
+  });
+
+  let parentFolderArr = useSelector((state) => {
+    return state.folderReducer.parentFolders;
+  });
+  let subFolderChildArr = useSelector((state) => {
+    return state.folderReducer.subFolderChild;
+  });
+
+  const folders = useSelector((state) => {
+    return state.folderReducer.folders;
+  });
+
+  const dispatch = useDispatch();
 
   useEffect(async () => {
-    const currentFolder = await setValues();
-    const childArr = await setChild(currentFolder);
-    await setParent(currentFolder);
-    await setChildForSubFolder(childArr);
-  }, [props.location.pathname, props.folders]);
+    var urls = props.location.pathname.split("/");
+    dispatch(findFolderByName(urls[urls.length - 1]));
+  }, [props.location.pathname]);
 
   useEffect(() => {
     myRef.current.focus();
   }, [addFolderVisibility]);
-
-  const setValues = async () => {
-    var urls = props.location.pathname.split("/");
-    var currentFolder = await props.folders.find(
-      (f) => f.name === urls[urls.length - 1]
-    );
-    setfolder({ ...currentFolder });
-
-    return currentFolder;
-  };
-
-  const setChild = async (currentFolder) => {
-    var arr = await props.folders.filter(
-      (f) => f.parentId === currentFolder.name
-    );
-    setsubFolder([...arr]);
-    return arr;
-  };
-
-  const setParent = async (currentFolder) => {
-    var parentId = currentFolder.parentId;
-    var arr = [];
-    if (parentId) {
-      var result = null;
-      var parentFolder = {};
-      while (result === null) {
-        parentFolder = await props.folders.find((f) => f.name === parentId);
-        arr.push(parentFolder);
-        result = parentFolder.parentId === null ? 1 : null;
-        parentId = parentFolder.parentId;
-      }
-    }
-    arr = arr.reverse();
-    setparentFolder([...arr]);
-  };
-
-  const setChildForSubFolder = async (childArr) => {
-    var subFolderNames = await childArr.map((f) => f.name);
-    var resultArr = [];
-    //to fetch all child folders
-    while (subFolderNames.length > 0) {
-      var arr = [];
-      for (var i = 0; i < props.folders.length; i++) {
-        if (subFolderNames.indexOf(props.folders[i].parentId) > -1) {
-          arr.push(props.folders[i]);
-        }
-      }
-      resultArr = [...resultArr, ...arr];
-      subFolderNames = arr.map((f) => f.name);
-    }
-    setchildFolder([...resultArr]);
-  };
 
   const addFolderHandler = () => {
     if (newFolder.length > 0) {
       var newFolderInfo = {
         id: uuid(),
         name: newFolder,
-        parentId: folder.name,
+        parentId: folderFound.name,
         location:
-          (folder.location === "/" ? `/${folder.name}` : folder.location) +
+          (folderFound.location === "/"
+            ? `/${folderFound.name}`
+            : folderFound.location) +
           "/" +
           newFolder,
       };
-      props.addFolder(newFolderInfo);
+      dispatch(addFolder(newFolderInfo));
       //resetting
       setnewFolder("");
       setaddFolderVisibility((prevState) => !prevState);
@@ -106,12 +77,10 @@ const Folder = (props) => {
 
   const onClickNewFolderIcon = () => {
     setaddFolderVisibility((prevState) => !prevState);
-    //focus the add folder input
-
-    // myRef.current.focus();
   };
 
   const searchHandler = async () => {
+    setSearching(true);
     if (searchTxt.length > 0) {
       if (defaultSearchType === "This Folder") {
         await searchThisFolder();
@@ -120,11 +89,6 @@ const Folder = (props) => {
       } else if (defaultSearchType === "Child Folders") {
         await searchChildFolder();
       }
-    } else {
-      //this block of code is when user clears after first search and starts search again in "This Folder".
-      //first time search will filter the original array.
-      //so that is resetted after each search.
-      await setChild(folder);
     }
   };
 
@@ -138,48 +102,30 @@ const Folder = (props) => {
   };
 
   const searchThisFolder = async () => {
-    await setChild(folder);
-    var searchResult = subFolder.filter(
+    var searchResult = subFolderArr.filter(
       (e) => e.name.toLowerCase().indexOf(searchTxt) >= 0
     );
-    setsubFolder(searchResult);
+    setsearchResults(searchResult);
   };
 
   const searchFolderOnApp = () => {
-    var searchResult = props.folders.filter(
+    var searchResult = folders.filter(
       (e) => e.name.toLowerCase().indexOf(searchTxt) >= 0
     );
     setsearchResults(searchResult);
   };
 
   const searchChildFolder = () => {
-    var searchResult = childFolder.filter(
+    var searchResult = subFolderChildArr.filter(
       (e) => e.name.toLowerCase().indexOf(searchTxt) >= 0
     );
     setsearchResults(searchResult);
   };
 
-  //experimenting
-  //not used currently
-  // urlPathClipper = (folderName) => {
-  //   var currentUrl = this.props.location.pathname.substring(1);
-  //   if (currentUrl.includes(folderName)) {
-
-  //     var splitUrlArr = currentUrl.split("/");
-
-  //     splitUrlArr = splitUrlArr.splice(0, splitUrlArr.indexOf(folderName));
-  //     var modifiedUrl =
-  //       splitUrlArr.length > 1
-  //         ? "/" + splitUrlArr.join("/") + `/${folderName}`
-  //         : `/${folderName}`;
-  //     // this.props.history.push(`${modifiedUrl}`);
-  //     return modifiedUrl;
-  //   }
-  // };
-
   const selectSearchElementHandler = (folderObj) => {
     props.history.push(folderObj.location);
     setdefaultSearchType("This Folder");
+    setSearching(false);
     setsearchResults([]);
   };
 
@@ -230,17 +176,12 @@ const Folder = (props) => {
           </button>
         </div>
       )}
-      {defaultSearchType === "This Folder" && (
+      {!searching && (
         <div className="newFolderHeaderWrapper">
           <div className="pathWrapper">
-            {parentFolder.map((folder) => {
+            {parentFolderArr.map((folder) => {
               return (
                 <div key={folder.id} style={{ display: "inline-block" }}>
-                  {/* <Link
-                    to={`${this.urlPathClipper(folder.name)}/${folder.name}`}
-                  >
-                    {folder.name}
-                  </Link> */}
                   <button
                     className="pathBtn"
                     onClick={() => {
@@ -253,20 +194,13 @@ const Folder = (props) => {
                 </div>
               );
             })}
-            {/* <Link
-              to={`${this.urlPathClipper(this.state.folder.name)}/${
-                this.state.folder.name
-              }`}
-            >
-              {this.state.folder.name}
-            </Link> */}
             <button
               className="pathBtn activeFolder"
               onClick={() => {
-                props.history.push(folder.location);
+                props.history.push(folderFound.location);
               }}
             >
-              {folder.name}
+              {folderFound.name}
             </button>
           </div>
           <div className="addNewFolderWrapper">
@@ -296,8 +230,8 @@ const Folder = (props) => {
         </div>
       )}
       <div className="foldersWrapper">
-        {defaultSearchType === "This Folder" &&
-          subFolder.map((e) => {
+        {!searching &&
+          subFolderArr.map((e) => {
             return (
               <Link className="linkTxt" key={e.id} to={`${url}/${e.name}`}>
                 <div className="folderInfo">
@@ -307,33 +241,29 @@ const Folder = (props) => {
               </Link>
             );
           })}
-        {subFolder.length === 0 && (
+        {(subFolderArr.length === 0 ||
+          (searchResults.length === 0 && searching)) && (
           <p className="fallbackTxt">No folders present</p>
         )}
 
-        {
-          defaultSearchType !== "This Folder" && searchResults.length > 0
-            ? searchResults.map((folder) => {
-                return (
-                  <div
-                    key={folder.id}
-                    className="searchElements"
-                    onClick={() => {
-                      selectSearchElementHandler(folder);
-                    }}
-                  >
-                    <div className="folderInfo">
-                      <img src={folderImg} width="50px" />
-                      <p className="folderName">{folder.name}</p>
-                    </div>
+        {searching && searchResults.length > 0
+          ? searchResults.map((folder) => {
+              return (
+                <div
+                  key={folder.id}
+                  className="searchElements"
+                  onClick={() => {
+                    selectSearchElementHandler(folder);
+                  }}
+                >
+                  <div className="folderInfo">
+                    <img src={folderImg} width="50px" />
+                    <p className="folderName">{folder.name}</p>
                   </div>
-                );
-              })
-            : null
-          // <p>No folders found</p>
-          //TODO:
-          //fallback for empty search results
-        }
+                </div>
+              );
+            })
+          : null}
       </div>
     </div>
   );
