@@ -21,7 +21,6 @@ const Folder = (props) => {
   const [searching, setSearching] = useState(false);
 
   let folderFound = useSelector((state) => {
-    console.log(state.folderReducer.currentFolder);
     return state.folderReducer.currentFolder;
   });
 

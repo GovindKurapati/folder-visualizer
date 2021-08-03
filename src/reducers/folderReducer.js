@@ -49,7 +49,6 @@ const INITIAL_FOLDER_STATE = {
 const folderReducer = (state = INITIAL_FOLDER_STATE, action) => {
   if (action.type === "FIND_FOLDER_BY_NAME") {
     let currentFolder = state.folders.find((f) => f.name === action.payload);
-    console.log("FRom reducer", currentFolder);
 
     if (!currentFolder) {
       return state;
@@ -88,7 +87,6 @@ const folderReducer = (state = INITIAL_FOLDER_STATE, action) => {
     }
     parentArr = parentArr.reverse();
     let parentFolders = [...parentArr];
-    console.log(currentFolder, subFolders, subFolderChild, parentFolders);
     return {
       folders: state.folders,
       currentFolder,
